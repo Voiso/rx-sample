@@ -1,0 +1,52 @@
+{
+  "name": "rx-sample",
+  "author": "VOISO frontend team",
+  "version": "0.2.2",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "description": "rx-sample simplifies managing RxJS Observables with Effector events, ensuring streamlined subscription control in reactive applications.",
+  "keywords": [
+    "effector",
+    "rxjs",
+    "typescript",
+    "observable",
+    "reactive-programming",
+    "subscription",
+    "reactivity"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Voiso/rx-sample"
+  },
+  "bugs": "https://github.com/Voiso/rx-sample/issues",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "lint:ts": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "effector": ">=23",
+    "rxjs": ">=7.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "effector": "^23.2.2",
+    "rxjs": "^7.8.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vite-plugin-dts": "^4.0.3",
+    "vitest": "^2.0.5"
+  }
+}
