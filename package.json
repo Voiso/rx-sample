@@ -1,7 +1,7 @@
 {
   "name": "rx-sample",
   "author": "VOISO frontend team",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "type": "module",
   "files": [
     "dist"
