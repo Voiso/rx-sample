@@ -14,14 +14,14 @@ type Input<D> = {
   source: Observable<D>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  target: EventCallable<D>;
+  target: EventCallable<D> | EventCallable<void>;
 };
 
 type InputWithStore<D> = {
   source: Store<Observable<D>>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  target: EventCallable<D>;
+  target: EventCallable<D> | EventCallable<void>;
 };
 
 export function rxSample<D>(config: Input<D>): void;
@@ -46,7 +46,7 @@ export function rxSample<D>({
     effect: (subscription, observable: Observable<D>) => {
       subscription?.unsubscribe();
 
-      const boundTarget = scopeBind(target, { safe: true });
+      const boundTarget = scopeBind(target as EventCallable<D>, { safe: true });
 
       return observable.subscribe(boundTarget);
     },
