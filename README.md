@@ -73,7 +73,7 @@ type InputWithStore<D> = {
 - **`source`**: `Observable<D>` — The Observable to subscribe to.
 - **`subscribeOn`**: `EventCallable<S>` — An Effector event that triggers the subscription to `source`.
 - **`unsubscribeOn`**: `EventCallable<U>` — An Effector event that triggers the unsubscription from `source`.
-- **`target`**: `EventCallable<D> | EventCallable<void>` — An Effector event where data from `source` will be sent, or a void event to execute side effects.
+- **`target`**: `EventCallable<D>` — An Effector event where data from `source` will be sent, or a void event to execute side effects.
 
 ## How It Works
 
@@ -87,7 +87,7 @@ type InputWithStore<D> = {
 
 Suppose we have an Observable representing a stream of messages, and we want to manage subscriptions to this stream using Effector events.
 
-You can see example here: [codesandox](https://goo.su/GYFyEP)
+You can see example here: [codesanbox](https://goo.su/GYFyEP)
 
 ## Common Use Cases
 
