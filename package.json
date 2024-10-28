@@ -2,18 +2,9 @@
   "name": "rx-sample",
   "author": "VOISO frontend team",
   "version": "1.0.4",
+  "private": true,
   "type": "module",
-  "files": [
-    "dist"
-  ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
+  "exports": "./src/index.ts",
   "description": "rx-sample simplifies managing RxJS Observables with Effector events, ensuring streamlined subscription control in reactive applications.",
   "keywords": [
     "effector",
@@ -31,8 +22,7 @@
   },
   "bugs": "https://github.com/Voiso/rx-sample/issues",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "smartbundle",
     "test": "vitest",
     "lint:ts": "tsc -p tsconfig.json --noEmit"
   },
@@ -44,9 +34,11 @@
     "@types/node": "^22.5.1",
     "effector": "^23.2.2",
     "rxjs": "^7.8.1",
+    "smartbundle": "^0.7.1",
     "typescript": "^5.5.3",
-    "vite": "^5.4.1",
-    "vite-plugin-dts": "^4.0.3",
     "vitest": "^2.0.5"
+  },
+  "engines": {
+    "pnpm": "^9.0.0"
   }
 }
