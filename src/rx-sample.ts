@@ -10,29 +10,32 @@ import {
 } from "effector";
 import { Observable, Subscription } from "rxjs";
 
-type Input<D> = {
+type Input<D, R = D> = {
   source: Observable<D>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  target: EventCallable<D>;
+  fn?: (data: D) => R;
+  target: EventCallable<R>;
 };
 
-type InputWithStore<D> = {
+type InputWithStore<D, R = D> = {
   source: Store<Observable<D>>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  target: EventCallable<D>;
+  fn?: (data: D) => R;
+  target: EventCallable<R>;
 };
 
-export function rxSample<D>(config: Input<D>): void;
-export function rxSample<D>(config: InputWithStore<D>): void;
+export function rxSample<D, R = D>(config: Input<D, R>): void;
+export function rxSample<D, R = D>(config: InputWithStore<D, R>): void;
 
-export function rxSample<D>({
+export function rxSample<D, R = D>({
   source,
   subscribeOn,
   unsubscribeOn,
+  fn,
   target,
-}: Input<D> | InputWithStore<D>) {
+}: Input<D, R> | InputWithStore<D, R>) {
   const $subscription = createStore<Subscription | null>(null, {
     serialize: "ignore",
   });
@@ -48,7 +51,9 @@ export function rxSample<D>({
 
       const boundTarget = scopeBind(target, { safe: true });
 
-      return observable.subscribe(boundTarget);
+      return observable.subscribe((data) =>
+        boundTarget(fn ? fn(data) : (data as unknown as R))
+      );
     },
   });
 
