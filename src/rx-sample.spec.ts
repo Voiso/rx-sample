@@ -81,4 +81,83 @@ describe("rxSample", () => {
 
     expect(scope.getState($messages)).toStrictEqual(["test"]);
   });
+
+  test("Should transform data using fn before sending to target", async () => {
+    const mockChannel = new Subject<number>();
+    const subscribe = createEvent();
+    const unsubscribe = createEvent();
+    const target = vi.fn() as unknown as EventCallable<string>;
+
+    const fn = (data: number) => `Value: ${data}`;
+
+    rxSample({
+      source: mockChannel,
+      subscribeOn: subscribe,
+      unsubscribeOn: unsubscribe,
+      target: target,
+      fn,
+    });
+
+    const scope = fork();
+
+    await allSettled(subscribe, { scope });
+
+    mockChannel.next(42);
+
+    expect(target).toHaveBeenCalledWith("Value: 42");
+  });
+
+  test("Should pass data to target without fn", async () => {
+    const mockChannel = new Subject<string>();
+    const subscribe = createEvent();
+    const unsubscribe = createEvent();
+    const target = vi.fn() as unknown as EventCallable<string>;
+
+    rxSample({
+      source: mockChannel,
+      subscribeOn: subscribe,
+      unsubscribeOn: unsubscribe,
+      target: target,
+    });
+
+    const scope = fork();
+
+    await allSettled(subscribe, { scope });
+
+    mockChannel.next("unchanged");
+
+    expect(target).toHaveBeenCalledWith("unchanged");
+  });
+
+  test("Should apply fn to data and update store correctly", async () => {
+    const mockChannel = new Subject<number>();
+    const subscribe = createEvent();
+    const unsubscribe = createEvent();
+    const target = createEvent<string>();
+
+    const $processedMessages = createStore<string[]>([]).on(
+      target,
+      (state, message) => [...state, message]
+    );
+
+    const fn = (data: number) => `Transformed ${data}`;
+
+    rxSample({
+      source: mockChannel,
+      subscribeOn: subscribe,
+      unsubscribeOn: unsubscribe,
+      target: target,
+      fn,
+    });
+
+    const scope = fork();
+
+    await allSettled(subscribe, { scope });
+
+    mockChannel.next(100);
+
+    expect(scope.getState($processedMessages)).toStrictEqual([
+      "Transformed 100",
+    ]);
+  });
 });
