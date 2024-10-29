@@ -35,7 +35,7 @@
     "@types/node": "^22.5.1",
     "effector": "^23.2.2",
     "rxjs": "^7.8.1",
-    "smartbundle": "^0.7.1",
+    "smartbundle": "^0.7.3",
     "typescript": "^5.5.3",
     "vitest": "^2.0.5"
   },
