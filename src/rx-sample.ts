@@ -7,6 +7,8 @@ import {
   Event,
   attach,
   scopeBind,
+  StoreWritable,
+  createEvent,
 } from "effector";
 import { Observable, Subscription } from "rxjs";
 
@@ -15,7 +17,7 @@ type Input<D, R = D> = {
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
   fn?: (data: D) => R;
-  target: EventCallable<R>;
+  target: EventCallable<R> | StoreWritable<R>;
 };
 
 type InputWithStore<D, R = D> = {
@@ -23,7 +25,7 @@ type InputWithStore<D, R = D> = {
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
   fn?: (data: D) => R;
-  target: EventCallable<R>;
+  target: EventCallable<R> | StoreWritable<R>;
 };
 
 export function rxSample<D, R = D>(config: Input<D, R>): void;
@@ -36,6 +38,7 @@ export function rxSample<D, R = D>({
   fn,
   target,
 }: Input<D, R> | InputWithStore<D, R>) {
+  const updateEvent = createEvent<R | D>();
   const $subscription = createStore<Subscription | null>(null, {
     serialize: "ignore",
   });
@@ -49,8 +52,9 @@ export function rxSample<D, R = D>({
     effect: (subscription, observable: Observable<D>) => {
       subscription?.unsubscribe();
 
-      const boundTarget = scopeBind(target, { safe: true });
-
+      const boundTarget = scopeBind(is.event(target) ? target : updateEvent, {
+        safe: true,
+      });
       return observable.subscribe((data) =>
         boundTarget(fn ? fn(data) : (data as unknown as R))
       );
@@ -62,6 +66,11 @@ export function rxSample<D, R = D>({
     effect: (subscription) => {
       subscription?.unsubscribe();
     },
+  });
+
+  sample({
+    clock: updateEvent,
+    target: target as StoreWritable<R | D>,
   });
 
   sample({

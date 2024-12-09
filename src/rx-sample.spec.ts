@@ -15,7 +15,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = vi.fn() as unknown as EventCallable<string>;
+    const target = createEvent();
 
     rxSample({
       source: mockChannel,
@@ -30,7 +30,6 @@ describe("rxSample", () => {
 
     mockChannel.next("test");
 
-    expect(target).toHaveBeenCalledWith("test");
     expect(mockChannel.observed).toBeTruthy();
   });
 
@@ -38,7 +37,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = vi.fn() as unknown as EventCallable<string>;
+    const target = createEvent();
 
     rxSample({
       source: mockChannel,
@@ -86,7 +85,11 @@ describe("rxSample", () => {
     const mockChannel = new Subject<number>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = vi.fn() as unknown as EventCallable<string>;
+    const target = createEvent<string>();
+    const $processedMessage = createStore<string>("").on(
+      target,
+      (_, message) => message
+    );
 
     const fn = (data: number) => `Value: ${data}`;
 
@@ -94,8 +97,8 @@ describe("rxSample", () => {
       source: mockChannel,
       subscribeOn: subscribe,
       unsubscribeOn: unsubscribe,
-      target: target,
       fn,
+      target,
     });
 
     const scope = fork();
@@ -104,14 +107,18 @@ describe("rxSample", () => {
 
     mockChannel.next(42);
 
-    expect(target).toHaveBeenCalledWith("Value: 42");
+    expect(scope.getState($processedMessage)).toStrictEqual("Value: 42");
   });
 
   test("Should pass data to target without fn", async () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = vi.fn() as unknown as EventCallable<string>;
+    const target = createEvent();
+    const $processedMessage = createStore<string>("").on(
+      target,
+      (_, message) => message
+    );
 
     rxSample({
       source: mockChannel,
@@ -126,7 +133,7 @@ describe("rxSample", () => {
 
     mockChannel.next("unchanged");
 
-    expect(target).toHaveBeenCalledWith("unchanged");
+    expect(scope.getState($processedMessage)).toStrictEqual("unchanged");
   });
 
   test("Should apply fn to data and update store correctly", async () => {
@@ -159,5 +166,27 @@ describe("rxSample", () => {
     expect(scope.getState($processedMessages)).toStrictEqual([
       "Transformed 100",
     ]);
+  });
+
+  test("Should pass data to target store without fn", async () => {
+    const mockChannel = new Subject<string>();
+    const subscribe = createEvent();
+    const unsubscribe = createEvent();
+    const $processedMessage = createStore<string>("");
+
+    rxSample({
+      source: mockChannel,
+      subscribeOn: subscribe,
+      unsubscribeOn: unsubscribe,
+      target: $processedMessage,
+    });
+
+    const scope = fork();
+
+    await allSettled(subscribe, { scope });
+
+    mockChannel.next("unchanged");
+
+    expect(scope.getState($processedMessage)).toStrictEqual("unchanged");
   });
 });
