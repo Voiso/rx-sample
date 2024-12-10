@@ -9,7 +9,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = createEvent();
+    const target = createEvent<string>();
 
     rxSample({
       source: mockChannel,
@@ -31,7 +31,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = createEvent();
+    const target = createEvent<string>();
 
     rxSample({
       source: mockChannel,
@@ -108,7 +108,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const target = createEvent();
+    const target = createEvent<string>();
     const $processedMessage = createStore<string>("").on(
       target,
       (_, message) => message
@@ -166,7 +166,7 @@ describe("rxSample", () => {
     const mockChannel = new Subject<string>();
     const subscribe = createEvent();
     const unsubscribe = createEvent();
-    const $processedMessage = createStore<string>("");
+    const $processedMessage = createStore("");
 
     rxSample({
       source: mockChannel,

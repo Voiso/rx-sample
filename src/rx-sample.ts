@@ -16,7 +16,7 @@ type Input<D, R = D> = {
   source: Observable<D>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  fn?: (data: D) => R;
+  fn: (data: D) => R;
   target: EventCallable<R> | StoreWritable<R>;
 };
 
@@ -24,39 +24,62 @@ type InputWithStore<D, R = D> = {
   source: Store<Observable<D>>;
   subscribeOn: Event<unknown>;
   unsubscribeOn: Event<unknown>;
-  fn?: (data: D) => R;
+  fn: (data: D) => R;
   target: EventCallable<R> | StoreWritable<R>;
 };
 
-export function rxSample<D, R = D>(config: Input<D, R>): void;
-export function rxSample<D, R = D>(config: InputWithStore<D, R>): void;
+type InputWithoutFn<D> = {
+  source: Observable<D>;
+  subscribeOn: Event<unknown>;
+  unsubscribeOn: Event<unknown>;
+  target: EventCallable<D> | StoreWritable<D>;
+};
 
-export function rxSample<D, R = D>({
-  source,
-  subscribeOn,
-  unsubscribeOn,
-  fn,
-  target,
-}: Input<D, R> | InputWithStore<D, R>) {
+type InputWithStoreWithoutFn<D> = {
+  source: Store<Observable<D>>;
+  subscribeOn: Event<unknown>;
+  unsubscribeOn: Event<unknown>;
+  target: EventCallable<D> | StoreWritable<D>;
+};
+
+function hasFn<D, R>(
+  config:
+    | Input<D, R>
+    | InputWithStore<D, R>
+    | InputWithoutFn<D>
+    | InputWithStoreWithoutFn<D>
+): config is Input<D, R> | InputWithStore<D, R> {
+  return "fn" in config && typeof config.fn === "function";
+}
+
+export function rxSample<D, R = D>(
+  config:
+    | Input<D, R>
+    | InputWithStore<D, R>
+    | InputWithoutFn<D>
+    | InputWithStoreWithoutFn<D>
+) {
   const updateEvent = createEvent<R | D>();
   const $subscription = createStore<Subscription | null>(null, {
     serialize: "ignore",
   });
 
-  const $observable = is.store(source)
-    ? source
-    : createStore(source, { serialize: "ignore" });
+  const $observable = is.store(config.source)
+    ? config.source
+    : createStore(config.source, { serialize: "ignore" });
 
   const subscribeFx = attach({
     source: $subscription,
     effect: (subscription, observable: Observable<D>) => {
       subscription?.unsubscribe();
 
-      const boundTarget = scopeBind(is.event(target) ? target : updateEvent, {
-        safe: true,
-      });
+      const boundTarget = scopeBind(
+        is.event(config.target) ? config.target : updateEvent,
+        { safe: true }
+      );
+
       return observable.subscribe((data) =>
-        boundTarget(fn ? fn(data) : (data as unknown as R))
+        boundTarget(hasFn(config) ? config.fn(data) : (data as unknown as R))
       );
     },
   });
@@ -70,11 +93,11 @@ export function rxSample<D, R = D>({
 
   sample({
     clock: updateEvent,
-    target: target as StoreWritable<R | D>,
+    target: config.target as StoreWritable<R | D>,
   });
 
   sample({
-    clock: [subscribeOn, $observable],
+    clock: [config.subscribeOn, $observable],
     source: $observable,
     target: subscribeFx,
   });
@@ -85,7 +108,7 @@ export function rxSample<D, R = D>({
   });
 
   sample({
-    clock: unsubscribeOn,
+    clock: config.unsubscribeOn,
     source: $subscription,
     target: unsubscribeFx,
   });
